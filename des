@@ -1,0 +1,94 @@
+#!/bin/bash
+
+#autore: corsair
+#data: 5-7-2014
+
+# ____              _____           _   _   ___
+#|  _ \  ___  ___  |_   _|__   ___ | | / | / _ \
+#| | | |/ _ \/ __|   | |/ _ \ / _ \| | | || | | |
+#| |_| |  __/\__ \   | | (_) | (_) | | | || |_| |
+#|____/ \___||___/   |_|\___/ \___/|_| |_(_)___/
+#
+
+# This SOFTWARE PRODUTC is provideTHE PROVIDER "as is" and "with all faults." THE PROVIDER makes no representations or warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical errors, or other harmful components of this SOFTWARE PRODUCT. There are inherent dangers in the use of any software, and you are solely responsible for determining whether this SOFTWARE PRODUCT is compatible with your equipment and other software installed on your equipment. You are also solely responsible for the protection of your equipment and backup of your data, and THE PROVIDER will not be liable for any damages you may suffer in connection with using, modifying, or distributing this SOFTWARE PRODUCT.
+
+operazione=$1
+
+percorso="/Users/Corsair/Documents/mySet.txt"
+#percorso="/Users/Corsair/d.txt" #test file
+ram="/Volumes/ramDisk"
+decifrato="f.txt"
+
+#--------------OPEN----------------------
+
+if [ "$operazione" = "open" ]; then
+    
+    if cd $ram &> /dev/null ; then
+	echo "ram gia montata!"
+    else
+	echo "monto la ram!"
+	diskutil erasevolume HFS+ "ramDisk" `hdiutil attach -nomount ram://307200` &> /dev/null
+	cd $ram
+    fi
+
+    until  openssl des3 -d -in $percorso -out $decifrato ; #finche da errore 
+    do
+	echo "ERRORE: Password errata! riprova.."
+    done 
+    nano $decifrato
+    
+    echo "          /!\ Attenzione! /!\ "
+    echo " per scrivere permanentemente le modifiche sul disco occorre digitare il seguente comando:"
+    echo "         'des save'"
+
+#--------------SAVE----------------------    
+elif [ "$operazione" = "save" ]; then
+
+    if cd $ram &> /dev/null ; then
+	
+	
+	read -s -p "Inserisci la password:" pass1
+	echo ""
+	read -s -p "Inserisci nuovamente la password:" pass2
+	echo ""
+
+	if [ $pass1 = $pass2 ]; then
+	    
+	    echo "password corrispondente!"
+	    
+	    if  openssl des3 -salt -in $decifrato -out $percorso -k $pass1 ; then
+		echo "file salvato correttamente"
+		echo "ricorda di dare quando hai finito: 'des clear'"
+	    else
+		echo "ERRORE: problema nel salvare il file!"
+	    fi
+	    
+	else
+	    echo "ERRORE: password discordanti.. riprova!"
+	fi
+
+    else
+	echo "ERRORE: impossibile salvare, nessuna partizione montata in ram!"
+    fi
+
+#--------------CLEAR----------------------
+elif [ "$operazione" = "clear" ]; then
+
+    if umount $ram ; then
+	echo "partizione ram smontata correttamente"
+    else
+	echo "ERRORE: umount partizione ram fail!"
+    fi
+
+    
+
+#--------------ARGNF---------------------
+else
+    echo "ERRORE: parametro non valido!"
+    echo " usa uno tra i seguenti parametri:"
+    echo "      save"
+    echo "      open"
+    echo "      clear"
+fi
+
+#echo ";-) My friend!!!"
