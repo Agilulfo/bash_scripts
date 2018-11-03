@@ -10,11 +10,10 @@ CURRENT_VOLUME=`pactl list sinks | grep -P "\tVolume:*" | cut -d'/' -f2 | tr -d 
 if [[ $DIRECTION = "+" ]] ; then
 	if [[ $(($CURRENT_VOLUME + $DELTA)) -gt $MAX_VOLUME ]] ; then
 		pactl set-sink-volume 0 $MAX_VOLUME%
+		espeak "max"
 	else
 		pactl set-sink-volume 0 +$DELTA%
 	fi
 elif [[ $DIRECTION = "-" ]] ; then
 	pactl set-sink-volume 0 -$DELTA%
 fi
-
-pactl play-sample vol
