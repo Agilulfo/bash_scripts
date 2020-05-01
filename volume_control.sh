@@ -5,7 +5,7 @@ DIRECTION=$1
 DELTA=5
 MAX_VOLUME=100
 
-CURRENT_VOLUME=`pactl list sinks | grep -P "\tVolume:*" | cut -d'/' -f2 | tr -d "% "`
+CURRENT_VOLUME=`pactl list sinks | grep -m 1 -P "\tVolume:*" | cut -d'/' -f2 | tr -d "% "`
 
 if [[ $DIRECTION = "+" ]] ; then
 	if [[ $(($CURRENT_VOLUME + $DELTA)) -gt $MAX_VOLUME ]] ; then
